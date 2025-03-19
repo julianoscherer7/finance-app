@@ -46,3 +46,12 @@ CREATE TABLE IF NOT EXISTS transacoes (
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
     FOREIGN KEY (categoria_id) REFERENCES categorias(id)
 ); 
+
+CREATE TABLE user_preferences (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    tema VARCHAR(50) NOT NULL DEFAULT 'claro',
+    cor_primaria VARCHAR(7) DEFAULT '#007bff',
+    cor_secundaria VARCHAR(7) DEFAULT '#28a745',
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+);

@@ -203,7 +203,8 @@ $ultimos_lancamentos = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <li><a href="despesas.php">Despesas</a></li>
             <li><a href="categorias.php">Categorias</a></li>
             <li><a href="relatorios.php">Relatórios</a></li>
-            <li><a href="logout.php">Sair</a></li>
+            <li><a href="configuracoes.php">Configurações</a></li> <!-- Novo link -->
+            <li><a href="logout.php">Sair</a></l>
         </ul>
     </div>
     

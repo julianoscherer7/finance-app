@@ -10,73 +10,27 @@ if (!isset($_SESSION['id'])) {
 $user_id = $_SESSION['id'];
 $mensagem = '';
 
-// Carregar preferências do usuário
-$stmt = $pdo->prepare("SELECT tema, cor_primaria, cor_secundaria FROM user_preferences WHERE usuario_id = ?");
-$stmt->execute([$user_id]);
-$preferences = $stmt->fetch(PDO::FETCH_ASSOC);
-
-// Se não houver preferências, usar o tema padrão
-if (!$preferences) {
-    $preferences = [
-        'tema' => 'claro',
-        'cor_primaria' => '#007bff',
-        'cor_secundaria' => '#28a745'
-    ];
-}
-
-// Aplicar o tema dinamicamente
-$tema = $preferences['tema'];
-$cor_primaria = $preferences['cor_primaria'];
-$cor_secundaria = $preferences['cor_secundaria'];
-
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if (isset($_POST['categoria_id'])) { // Formulário de receita
-        $categoria_id = $_POST['categoria_id'] ?? '';
-        $descricao = $_POST['descricao'] ?? '';
-        $valor = str_replace(',', '.', $_POST['valor'] ?? '');
-        $data = $_POST['data'] ?? '';
+    $categoria_id = $_POST['categoria_id'] ?? '';
+    $descricao = $_POST['descricao'] ?? '';
+    $valor = str_replace(',', '.', $_POST['valor'] ?? '');
+    $data = $_POST['data'] ?? '';
+    
 
-        if (empty($categoria_id) || empty($descricao) || empty($valor) || empty($data)) {
-            $mensagem = '<div class="alert alert-danger">Preencha todos os campos obrigatórios.</div>';
+    if (empty($categoria_id) || empty($descricao) || empty($valor) || empty($data)) {
+        $mensagem = '<div class="alert alert-danger">Preencha todos os campos obrigatórios.</div>';
+    } else {
+    
+        $stmt = $pdo->prepare("
+            INSERT INTO transacoes (usuario_id, categoria_id, descricao, valor, data, tipo)
+            VALUES (?, ?, ?, ?, ?, 'receita')
+        ");
+        
+        if ($stmt->execute([$user_id, $categoria_id, $descricao, $valor, $data])) {
+            $mensagem = '<div class="alert alert-success">Receita cadastrada com sucesso!</div>';
         } else {
-            $stmt = $pdo->prepare("
-                INSERT INTO transacoes (usuario_id, categoria_id, descricao, valor, data, tipo)
-                VALUES (?, ?, ?, ?, ?, 'receita')
-            ");
-            if ($stmt->execute([$user_id, $categoria_id, $descricao, $valor, $data])) {
-                $mensagem = '<div class="alert alert-success">Receita cadastrada com sucesso!</div>';
-            } else {
-                $mensagem = '<div class="alert alert-danger">Erro ao cadastrar receita. Tente novamente.</div>';
-            }
+            $mensagem = '<div class="alert alert-danger">Erro ao cadastrar receita. Tente novamente.</div>';
         }
-    } elseif (isset($_POST['tema'])) { // Formulário de tema
-        $tema = $_POST['tema'];
-        $cor_primaria = $_POST['cor_primaria'];
-        $cor_secundaria = $_POST['cor_secundaria'];
-
-        // Verificar se já existe uma preferência para o usuário
-        $stmt = $pdo->prepare("SELECT id FROM user_preferences WHERE usuario_id = ?");
-        $stmt->execute([$user_id]);
-        $preference = $stmt->fetch();
-
-        if ($preference) {
-            // Atualizar preferência existente
-            $stmt = $pdo->prepare("
-                UPDATE user_preferences
-                SET tema = ?, cor_primaria = ?, cor_secundaria = ?
-                WHERE usuario_id = ?
-            ");
-            $stmt->execute([$tema, $cor_primaria, $cor_secundaria, $user_id]);
-        } else {
-            // Inserir nova preferência
-            $stmt = $pdo->prepare("
-                INSERT INTO user_preferences (usuario_id, tema, cor_primaria, cor_secundaria)
-                VALUES (?, ?, ?, ?)
-            ");
-            $stmt->execute([$user_id, $tema, $cor_primaria, $cor_secundaria]);
-        }
-
-        $mensagem = '<div class="alert alert-success">Tema salvo com sucesso!</div>';
     }
 }
 
@@ -107,68 +61,65 @@ $receitas = $stmt->fetchAll(PDO::FETCH_ASSOC);
             margin: 0;
             display: flex;
             min-height: 100vh;
-            background-color: <?php echo ($tema == 'escuro') ? '#333' : '#f5f5f5'; ?>;
-            color: <?php echo ($tema == 'escuro') ? '#fff' : '#333'; ?>;
         }
-
+        
         .sidebar {
             width: 250px;
-            background: <?php echo ($tema == 'escuro') ? '#222' : '#333'; ?>;
+            background: #333;
             color: #fff;
             padding: 20px;
             height: 100vh;
         }
-
+        
         .sidebar h2 {
             margin-top: 0;
             border-bottom: 1px solid #444;
             padding-bottom: 10px;
         }
-
+        
         .sidebar ul {
             list-style: none;
             padding: 0;
         }
-
+        
         .sidebar ul li {
             padding: 10px 0;
         }
-
+        
         .sidebar ul li a {
             color: #fff;
             text-decoration: none;
             display: block;
         }
-
+        
         .sidebar ul li a:hover {
             color: #ccc;
         }
-
+        
         .content {
             flex-grow: 1;
             padding: 20px;
-            background: <?php echo ($tema == 'escuro') ? '#444' : '#fff'; ?>;
-            color: <?php echo ($tema == 'escuro') ? '#fff' : '#333'; ?>;
+            background: #f5f5f5;
         }
-
+        
         .card {
-            background: <?php echo ($tema == 'escuro') ? '#555' : '#fff'; ?>;
+            background: white;
             border-radius: 8px;
             padding: 20px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             margin-bottom: 20px;
         }
-
+        
         .form-group {
             margin-bottom: 15px;
         }
-
+        
         .form-group label {
             display: block;
             margin-bottom: 5px;
             font-weight: bold;
         }
-
+        
         .form-control {
             width: 100%;
             padding: 8px;
@@ -176,61 +127,61 @@ $receitas = $stmt->fetchAll(PDO::FETCH_ASSOC);
             border-radius: 4px;
             box-sizing: border-box;
         }
-
+        
         .btn {
             display: inline-block;
             padding: 8px 16px;
-            background-color: <?php echo $cor_primaria; ?>;
+            background: #007bff;
             color: white;
             border-radius: 4px;
             text-decoration: none;
             border: none;
             cursor: pointer;
         }
-
+        
         .btn-success {
-            background-color: <?php echo $cor_secundaria; ?>;
+            background: #28a745;
         }
-
+        
         .btn-danger {
-            background-color: #dc3545;
+            background: #dc3545;
         }
-
+        
         table {
             width: 100%;
             border-collapse: collapse;
         }
-
+        
         table th, table td {
             padding: 12px;
             text-align: left;
             border-bottom: 1px solid #eee;
         }
-
+        
         table th {
-            background: <?php echo ($tema == 'escuro') ? '#666' : '#f5f5f5'; ?>;
+            background: #f5f5f5;
         }
-
-        .receitas { color: <?php echo $cor_secundaria; ?>; }
-
+        
+        .receitas { color: #28a745; }
+        
         .alert {
             padding: 15px;
             margin-bottom: 20px;
             border-radius: 4px;
         }
-
+        
         .alert-success {
             background-color: #d4edda;
             color: #155724;
             border: 1px solid #c3e6cb;
         }
-
+        
         .alert-danger {
             background-color: #f8d7da;
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
-
+        
         .categoria-indicador {
             display: inline-block;
             width: 12px;
@@ -293,31 +244,6 @@ $receitas = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
         
         <div class="card">
-            <h2>Personalizar Tema</h2>
-            <form method="POST" action="">
-                <div class="form-group">
-                    <label for="tema">Tema</label>
-                    <select id="tema" name="tema" class="form-control" required>
-                        <option value="claro" <?php echo ($tema == 'claro') ? 'selected' : ''; ?>>Claro</option>
-                        <option value="escuro" <?php echo ($tema == 'escuro') ? 'selected' : ''; ?>>Escuro</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="cor_primaria">Cor Primária</label>
-                    <input type="color" id="cor_primaria" name="cor_primaria" value="<?php echo $cor_primaria; ?>" class="form-control" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="cor_secundaria">Cor Secundária</label>
-                    <input type="color" id="cor_secundaria" name="cor_secundaria" value="<?php echo $cor_secundaria; ?>" class="form-control" required>
-                </div>
-                
-                <button type="submit" class="btn">Salvar Tema</button>
-            </form>
-        </div>
-        
-        <div class="card">
             <h2>Minhas Receitas</h2>
             <table>
                 <thead>
@@ -351,4 +277,5 @@ $receitas = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </div>
 </body>
-</html>
+</html> 
+receitas.php
