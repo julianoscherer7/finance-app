@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt_br">
 <head>
@@ -33,6 +34,28 @@
             padding:20px;
         }
     </style>
+    <style>
+    body {
+        background-color: <?php echo ($GLOBALS['tema'] == 'escuro') ? '#333' : '#f5f5f5'; ?>;
+        color: <?php echo ($GLOBALS['tema'] == 'escuro') ? '#fff' : '#333'; ?>;
+    }
+    
+    .sidebar {
+        background: <?php echo ($GLOBALS['tema'] == 'escuro') ? '#222' : '#333'; ?>;
+    }
+    
+    .content {
+        background: <?php echo ($GLOBALS['tema'] == 'escuro') ? '#444' : '#fff'; ?>;
+    }
+    
+    .btn-primary {
+        background-color: <?php echo $GLOBALS['cor_primaria']; ?>;
+    }
+    
+    .btn-secondary {
+        background-color: <?php echo $GLOBALS['cor_secundaria']; ?>;
+    }
+</style>
 </head>
 <body>
     <div class="sidebar">
